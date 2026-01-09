@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "app_backend" 
+version = "0.1.0"
+requires-python = ">=3.10"
+dependencies = [
+    "pydantic",
+    "pydantic-settings",
+    "pyyaml"
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["*"]
+namespaces = false
