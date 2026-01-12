@@ -21,10 +21,7 @@ logger = setup_logging("first.api")
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Starting API server...")
-    # Note: In production, use Alembic migrations instead of create_all
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    logger.info("Database tables created")
+    # using Alembic
     yield
     logger.info("Shutting down API server...")
 
