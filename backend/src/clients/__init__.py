@@ -22,8 +22,7 @@ class RedisClient:
                 host=settings.REDIS_HOST,
                 port=settings.REDIS_PORT,
                 password=settings.REDIS_PASS,
-                decode_responses=True,
-                socket_timeout=5
+                decode_responses=True
             )
             await self._client.ping()
         return self._client
