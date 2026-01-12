@@ -19,6 +19,7 @@ RUN playwright install-deps chromium
 RUN playwright install chromium
 
 COPY src/ ./src/
+COPY alembic.ini ./src/
 
 RUN chown -R appuser:appgroup /app
 
