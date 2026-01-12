@@ -4,7 +4,7 @@ from pydantic import computed_field
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env")
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     SCRAPE_INTERVAL_SECONDS: ClassVar[int] = 60
     
@@ -47,7 +47,7 @@ class Settings(BaseSettings):
     # Telegram 
     TELEGRAM_TOKEN: str
     TELEGRAM_BOT_USERNAME: str
-    TELEGRAM_TOKENS_TTL: ClassVar[int] = 60 * 5  # 5 minutes
+    TELEGRAM_TOKENS_TTL: int = 60 * 5  # 5 minutes
 
     # Optional
     ALERT_WEBHOOK: str = ""
