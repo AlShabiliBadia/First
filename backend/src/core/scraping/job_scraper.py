@@ -26,29 +26,31 @@ async def scrape_newest_jobs() -> None:
     
     try:
         context = await init_context(browser)
-        await context.route("**/*", route_intercept)
-        page = await context.new_page()
-        
-        newest_jobs: Dict[str, Dict[str, str]] = {category: {} for category in settings.CATEGORIES}
-        
-        for category in settings.CATEGORIES:
-            try:
-                await page.goto(Selectors.get_category_url(category))
-                rows = await page.locator(Selectors.PROJECT_ROW).all()
+        try:
+            await context.route("**/*", route_intercept)
+            page = await context.new_page()
+            
+            newest_jobs: Dict[str, Dict[str, str]] = {category: {} for category in settings.CATEGORIES}
+            
+            for category in settings.CATEGORIES:
+                try:
+                    await page.goto(Selectors.get_category_url(category))
+                    rows = await page.locator(Selectors.PROJECT_ROW).all()
 
-                # Scrape up to 10 jobs per category
-                for row in rows[:10]:
-                    title_link = row.locator(Selectors.PROJECT_TITLE_LINK).first
-                    url = await title_link.get_attribute("href")
-                    project_id = url.split("/project/")[1].split("-")[0]
-                    newest_jobs[category][project_id] = url
-                
-                logger.info(f"Scraped {len(newest_jobs[category])} jobs from {category}")
+                    # Scrape up to 10 jobs per category
+                    for row in rows[:10]:
+                        title_link = row.locator(Selectors.PROJECT_TITLE_LINK).first
+                        url = await title_link.get_attribute("href")
+                        project_id = url.split("/project/")[1].split("-")[0]
+                        newest_jobs[category][project_id] = url
                     
-            except Exception as e:
-                logger.error(f"Failed to scrape category '{category}': {e}")
+                    logger.info(f"Scraped {len(newest_jobs[category])} jobs from {category}")
+                        
+                except Exception as e:
+                    logger.error(f"Failed to scrape category '{category}': {e}")
+        finally:
+            await context.close()
         
-        await context.close()
         await compare_and_process(newest_jobs)
         
     finally:
@@ -74,26 +76,27 @@ async def scrape_data(jobs: Dict[str, List[Tuple[str, str]]]) -> None:
     try:
         for category, link_items in jobs.items():
             context = await init_context(browser)
-            await context.route("**/*", route_intercept)
-            page = await context.new_page()
-            
-            payload[category] = []
-            
-            for project_id, link in link_items:
-                try:
-                    await page.goto(link, timeout=20000, wait_until="domcontentloaded")
-                    await page.wait_for_selector(Selectors.PAGE_TITLE, timeout=5000)
+            try:
+                await context.route("**/*", route_intercept)
+                page = await context.new_page()
+                
+                payload[category] = []
+                
+                for project_id, link in link_items:
+                    try:
+                        await page.goto(link, timeout=20000, wait_until="domcontentloaded")
+                        await page.wait_for_selector(Selectors.PAGE_TITLE, timeout=5000)
 
-                    # Extract project data
-                    project_data = await _extract_project_data(page, project_id, link)
-                    payload[category].append(project_data)
-                    logger.debug(f"Scraped details for {project_id}")
+                        # Extract project data
+                        project_data = await _extract_project_data(page, project_id, link)
+                        payload[category].append(project_data)
+                        logger.debug(f"Scraped details for {project_id}")
 
-                except Exception as e:
-                    logger.warning(f"Failed to scrape project {project_id}: {e}")
-                    await redis_client.srem(f"ids:{category}", project_id)
-
-            await context.close()
+                    except Exception as e:
+                        logger.warning(f"Failed to scrape project {project_id}: {e}")
+                        await redis_client.srem(f"ids:{category}", project_id)
+            finally:
+                await context.close()
 
         # Normalize and publish the data
         payload = await normalize_data(payload)
