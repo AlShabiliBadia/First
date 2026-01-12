@@ -19,7 +19,7 @@ def mask_subscription(subscription: models.Subscription) -> schemas.Subscription
     target_address = subscription.target_address
     
     if subscription.platform == PlatformEnum.TELEGRAM or subscription.platform == "telegram":
-        target_address = "CONNECTED"
+        target_address = TELEGRAM_CONNECTED_KEYWORD
     
     return schemas.SubscriptionResponse(
         id=subscription.id,
