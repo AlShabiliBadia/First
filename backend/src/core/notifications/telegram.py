@@ -14,13 +14,6 @@ TELEGRAM_API_URL = "https://api.telegram.org/bot{token}/sendMessage"
 async def telegram_format(category: str, data: Dict[str, str]) -> str:
     """
     Format job data as a Telegram message.
-    
-    Args:
-        category: The job category.
-        data: Job data dictionary with project_* keys.
-        
-    Returns:
-        Formatted message string for Telegram (Markdown).
     """
     message = f"""
  *New Job Alert*
@@ -28,13 +21,13 @@ async def telegram_format(category: str, data: Dict[str, str]) -> str:
  *{data.get('project_title', 'Unknown Title')}*
  [View Project]({data.get('project_link', '')})
 
-━━━━━━ Project Overview ━━━━━━
+━━ Project Overview ━━
  Category: {category}
  Budget: {data.get('project_budget', 'N/A')}
  Duration: {data.get('project_duration', 'N/A')}
  Bids: {data.get('project_number_of_bids', '0')}
 
-━━━━━━ Client Information ━━━━━━
+━━ Client Information ━━
  Owner: {data.get('project_owner_name', 'N/A')}
  Employment Rate: {data.get('project_owner_employment_rate', 'N/A')}
  Member Since: {data.get('project_owner_registration_date', 'N/A')}

@@ -14,13 +14,6 @@ logger = get_notifications_logger()
 async def discord_format(category: str, data: Dict[str, str]) -> dict:
     """
     Format job data as a Discord webhook message.
-    
-    Args:
-        category: The job category.
-        data: Job data dictionary with project_* keys.
-        
-    Returns:
-        Discord webhook payload with embeds.
     """
     return {
         "username": "First",
@@ -30,12 +23,12 @@ async def discord_format(category: str, data: Dict[str, str]) -> dict:
             {
                 "title": data.get("project_title", "Unknown Title"),
                 "url": data.get("project_link", ""),
-                "color": 0x800080,  # Purple
+                "color": 0x800080,
 
                 "fields": [
                     {
                         "name": "━━━━━━━━━━ Project Overview ━━━━━━━━━━",
-                        "value": "\u200b",  # Zero-width space
+                        "value": "\u200b",
                         "inline": False
                     },
                     {
@@ -100,13 +93,6 @@ async def discord_format(category: str, data: Dict[str, str]) -> dict:
 async def notify_discord(webhook_url: str, data: dict) -> bool:
     """
     Send a notification to a Discord webhook.
-    
-    Args:
-        webhook_url: The Discord webhook URL.
-        data: The formatted message payload.
-        
-    Returns:
-        True if successful, False otherwise.
     """
     try:
         async with httpx.AsyncClient() as client:

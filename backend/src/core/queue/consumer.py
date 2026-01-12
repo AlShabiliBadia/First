@@ -32,10 +32,13 @@ async def start_consuming() -> None:
             job_raw = await redis_client.blmove(
                 settings.QUEUE_MAIN, 
                 settings.QUEUE_PROCESSING, 
-                0,  # timeout (0 = block forever)
+                30,
                 "RIGHT", 
                 "LEFT"
             )
+            
+            if job_raw is None:
+                continue
 
             job = json.loads(job_raw)
             category = job[0]
