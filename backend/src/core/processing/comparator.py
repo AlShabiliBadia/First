@@ -2,7 +2,7 @@
 
 from typing import Dict, List, Tuple
 
-from core.clients.redis_client import get_redis_client
+from clients import get_redis_client
 
 
 async def compare_and_process(newest_jobs: Dict[str, Dict[str, str]]) -> None:

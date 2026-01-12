@@ -4,11 +4,11 @@ import asyncio
 
 from core.scraping import scrape_newest_jobs
 from logging_config import get_scraper_logger
-
+from config import settings
 
 logger = get_scraper_logger()
 
-SCRAPE_INTERVAL_SECONDS = 60
+SCRAPE_INTERVAL_SECONDS = settings.SCRAPE_INTERVAL_SECONDS
 
 
 async def run_scraper_loop() -> None:

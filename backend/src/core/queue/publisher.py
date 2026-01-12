@@ -4,7 +4,7 @@ import json
 from typing import Dict, List
 
 from config import settings
-from core.clients.redis_client import get_redis_client
+from clients import get_redis_client
 
 
 async def publish_jobs(payload: Dict[str, List[Dict[str, str]]]) -> None:

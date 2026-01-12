@@ -6,7 +6,7 @@ from pydantic import computed_field
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
-    SCRAPE_INTERVAL_SECONDS: ClassVar[int] = 60
+    SCRAPE_INTERVAL_SECONDS: ClassVar[int] = 180
     
     CATEGORIES: ClassVar[list[str]] = [
         "business", "development", "engineering-architecture",

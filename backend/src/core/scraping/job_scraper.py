@@ -5,7 +5,7 @@ from typing import Dict, List, Tuple
 from config import settings
 from core.scraping.browser import init_browser, init_context, route_intercept
 from core.scraping.selectors import Selectors
-from core.clients.redis_client import get_redis_client
+from clients import get_redis_client
 from core.processing.comparator import compare_and_process
 from core.processing.normalizer import normalize_data
 from core.queue.publisher import publish_jobs

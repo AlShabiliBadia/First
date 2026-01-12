@@ -59,6 +59,7 @@ async def start_consuming() -> None:
             # CRITICAL: Consumer crash - notify via Discord
             logger.critical(f"Consumer crashed: {e}")
             # Don't remove from processing queue - job can be retried
+            await asyncio.sleep(5) 
 
 
 async def notifier(category: str, data: Dict[str, str]) -> None:
