@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import List, Optional
 
 from sqlalchemy import (
-    Boolean, DateTime, ForeignKey, Integer, String, Text, func, Enum as SAEnum
+    Boolean, BigInteger, DateTime, ForeignKey, Integer, String, Text, func, Enum as SAEnum
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
@@ -23,6 +23,7 @@ class User(Base):
     password_hash: Mapped[str] = mapped_column(String, nullable=False)
     max_categories: Mapped[int] = mapped_column(Integer, default=1) 
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    telegram_chat_id: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True, unique=True, default=None) # new
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     subscriptions: Mapped[List["Subscription"]] = relationship(
@@ -47,6 +48,7 @@ class Job(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     external_id: Mapped[str] = mapped_column(String, unique=True, index=True, nullable=False)
+    external_url: Mapped[str] = mapped_column(String, nullable=False)
     category: Mapped[str] = mapped_column(String, index=True, nullable=False)
     title: Mapped[str] = mapped_column(Text, nullable=False)
     details: Mapped[str] = mapped_column(Text, nullable=False) 
@@ -55,6 +57,6 @@ class Job(Base):
     owner_name: Mapped[str] = mapped_column(String, nullable=False)
     owner_registration_date: Mapped[str] = mapped_column(String, nullable=False)
     owner_employment_rate: Mapped[str] = mapped_column(String, nullable=False)
-    number_of_bids: Mapped[int] = mapped_column(Integer, default=0)
+    number_of_bids: Mapped[str] = mapped_column(String, default=0)
     published_at: Mapped[str] = mapped_column(String, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
