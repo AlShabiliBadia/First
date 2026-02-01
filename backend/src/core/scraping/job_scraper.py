@@ -34,7 +34,11 @@ async def scrape_newest_jobs() -> None:
             
             for category in settings.CATEGORIES:
                 try:
-                    await page.goto(Selectors.get_category_url(category))
+                    await page.goto(
+                        Selectors.get_category_url(category),
+                        timeout=20000,
+                        wait_until="domcontentloaded"
+                    )
                     rows = await page.locator(Selectors.PROJECT_ROW).all()
 
                     # Scrape up to 10 jobs per category

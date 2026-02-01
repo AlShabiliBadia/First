@@ -11,8 +11,6 @@ def setup_cors(app: FastAPI) -> None:
         "http://localhost:3000",
         "https://first.alshabili.site",
         "https://www.first.alshabili.site",
-        "https://id-preview--ec733999-017a-435b-85d1-f4b0eec70b6f.lovable.app",
-        "https://id-preview--ec733999-017a-435b-85d1-f4b0eec70b6f.lovable.app",
     ]
 
     app.add_middleware(

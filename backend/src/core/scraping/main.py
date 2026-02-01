@@ -1,6 +1,7 @@
 """Main entry point for the scraper service."""
 
 import asyncio
+import traceback
 
 from core.scraping import scrape_newest_jobs
 from logging_config import get_scraper_logger
@@ -25,7 +26,7 @@ async def run_scraper_loop() -> None:
             await scrape_newest_jobs()
             logger.info("Scrape complete. Sleeping...")
         except Exception as e:
-            logger.critical(f"Scraper crashed: {e}")
+            logger.critical(f"Scraper crashed: {e}\n{traceback.format_exc()}")
         
         await asyncio.sleep(SCRAPE_INTERVAL_SECONDS)
 

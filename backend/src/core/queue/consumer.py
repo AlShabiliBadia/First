@@ -5,6 +5,7 @@ import json
 from typing import Dict
 
 from sqlalchemy import select
+from sqlalchemy.dialects.postgresql import insert
 
 from config import settings
 from database import AsyncSessionLocal
@@ -96,7 +97,7 @@ async def notifier(category: str, data: Dict[str, str]) -> None:
 
         # Save job to database
         try:
-            job = models.Job(
+            stmt = insert(models.Job).values(
                 external_id=data["project_id"],
                 external_url=data["project_link"],
                 category=category,
@@ -109,10 +110,11 @@ async def notifier(category: str, data: Dict[str, str]) -> None:
                 owner_employment_rate=data["project_owner_employment_rate"],
                 number_of_bids=data["project_number_of_bids"],
                 published_at=data["project_date_published"]
-            )
-            db.add(job)
+            ).on_conflict_do_nothing(index_elements=['external_id'])
+            
+            await db.execute(stmt)
             await db.commit()
             logger.debug(f"Saved job {data['project_id']} to database")
         except Exception as e:
-            logger.critical(f"Database error saving job {data.get('project_id')}: {e}")
-            raise  # Re-raise to trigger retry logic
+            logger.error(f"Database error saving job {data.get('project_id')}: {e}")
+            await db.rollback()

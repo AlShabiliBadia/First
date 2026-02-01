@@ -23,7 +23,16 @@ async def init_browser(headless: bool = True) -> tuple[Playwright, Browser]:
         Tuple of (Playwright instance, Browser instance).
     """
     playwright = await async_playwright().start()
-    browser = await playwright.chromium.launch(headless=headless)
+    browser = await playwright.chromium.launch(
+        headless=headless,
+        args=[
+            "--no-sandbox",
+            "--disable-dev-shm-usage",
+            "--disable-gpu",
+            "--disable-setuid-sandbox",
+            "--single-process",
+        ]
+    )
     return playwright, browser
 
 
