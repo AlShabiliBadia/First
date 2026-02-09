@@ -1,7 +1,12 @@
 """Browser utilities for web scraping with Playwright."""
 
+import asyncio
 import random
 from playwright.async_api import async_playwright, Browser, BrowserContext, Playwright
+
+from logging_config import get_scraper_logger
+
+logger = get_scraper_logger()
 
 USER_AGENTS: list[str] = [
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -12,7 +17,25 @@ USER_AGENTS: list[str] = [
 ]
 
 
-async def init_browser(headless: bool = True) -> tuple[Playwright, Browser]:
+BROWSER_ARGS = [
+    "--no-sandbox",
+    "--disable-setuid-sandbox",
+    "--disable-dev-shm-usage",
+    "--disable-gpu",
+    "--disable-software-rasterizer",
+    "--disable-extensions",
+    "--disable-background-networking",
+    "--disable-background-timer-throttling",
+    "--disable-backgrounding-occluded-windows",
+    "--disable-renderer-backgrounding",
+    "--disable-features=TranslateUI",
+    "--disable-ipc-flooding-protection",
+    "--memory-pressure-off",
+    "--js-flags=--max-old-space-size=512",
+]
+
+
+async def init_browser(headless: bool = True, max_retries: int = 3) -> tuple[Playwright, Browser]:
     """
     Initialize a Playwright browser instance.
     
@@ -23,17 +46,23 @@ async def init_browser(headless: bool = True) -> tuple[Playwright, Browser]:
         Tuple of (Playwright instance, Browser instance).
     """
     playwright = await async_playwright().start()
-    browser = await playwright.chromium.launch(
-        headless=headless,
-        args=[
-            "--no-sandbox",
-            "--disable-dev-shm-usage",
-            "--disable-gpu",
-            "--disable-setuid-sandbox",
-            "--single-process",
-        ]
-    )
-    return playwright, browser
+    
+    last_error = None
+    for attempt in range(max_retries):
+        try:
+            browser = await playwright.chromium.launch(
+                headless=headless,
+                args=BROWSER_ARGS,
+            )
+            return playwright, browser
+        except Exception as e:
+            last_error = e
+            logger.warning(f"Browser launch attempt {attempt + 1}/{max_retries} failed: {e}")
+            if attempt < max_retries - 1:
+                await asyncio.sleep(2 ** attempt)
+    
+    await playwright.stop()
+    raise RuntimeError(f"Failed to launch browser after {max_retries} attempts: {last_error}")
 
 
 async def init_context(browser: Browser) -> BrowserContext:
@@ -48,7 +77,12 @@ async def init_context(browser: Browser) -> BrowserContext:
     """
     context = await browser.new_context(
         user_agent=random.choice(USER_AGENTS),
+        viewport={"width": 1280, "height": 720},
+        ignore_https_errors=True,
     )
+    # Set default navigation timeout for all pages in this context
+    context.set_default_navigation_timeout(30000)
+    context.set_default_timeout(15000)
     return context
 
 
