@@ -30,6 +30,16 @@ jobs:
 
             cd "$APP_DIR"
             git pull --ff-only
-            docker compose up -d --build --remove-orphans
-            docker compose exec -T api alembic upgrade head
+
+            if docker compose version >/dev/null 2>&1; then
+              COMPOSE="docker compose"
+            elif command -v docker-compose >/dev/null 2>&1; then
+              COMPOSE="docker-compose"
+            else
+              echo "Docker Compose is not installed on the server"
+              exit 1
+            fi
+
+            $COMPOSE up -d --build --remove-orphans
+            $COMPOSE exec -T api alembic upgrade head
             docker image prune -f
