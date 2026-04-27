@@ -9,8 +9,8 @@ def setup_cors(app: FastAPI) -> None:
 
     origins = [
         "http://localhost:3000",
-        "https://first.alshabili.site",
-        "https://www.first.alshabili.site",
+        "https://first.alshabili.com",
+        "https://www.first.alshabili.com",
     ]
 
     app.add_middleware(

@@ -15,7 +15,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(
             "Welcome to First Notifications Bot!\n\n"
             "To receive job notifications, please connect your account:\n"
-            "1. Go to our website: [Click here](https://first.alshabili.site)\n"
+            "1. Go to our website: [Click here](https://first.alshabili.com)\n"
             "2. Click *Connect Telegram* in your profile\n"
             "3. Click the link that appears",
             parse_mode="Markdown"
@@ -69,7 +69,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "/start - Connect your account\n"
         "/help - Show this message\n"
         "/status - Check connection status\n\n"
-        "Manage your subscriptions at: https://first.alshabili.site",
+        "Manage your subscriptions at: https://first.alshabili.com",
         parse_mode="Markdown"
     )
 

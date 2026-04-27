@@ -1,0 +1,35 @@
+name: Deploy First backend to EC2
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: ${{ secrets.EC2_PORT || '22' }}
+          script_stop: true
+          script: |
+            set -e
+            APP_DIR="/opt/apps/First"
+
+            if [ ! -d "$APP_DIR/.git" ]; then
+              echo "Missing git repo at $APP_DIR. Clone this repo on the server first."
+              exit 1
+            fi
+
+            cd "$APP_DIR"
+            git pull --ff-only
+            docker compose up -d --build --remove-orphans
+            docker compose exec -T api alembic upgrade head
+            docker image prune -f

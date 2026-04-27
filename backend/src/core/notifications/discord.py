@@ -17,7 +17,7 @@ async def discord_format(category: str, data: Dict[str, str]) -> dict:
     """
     return {
         "username": "First",
-        "avatar_url": "https://alshabili.site/logo.png",
+        "avatar_url": "https://alshabili.com/logo.png",
 
         "embeds": [
             {
@@ -81,7 +81,7 @@ async def discord_format(category: str, data: Dict[str, str]) -> dict:
                 ],
                 "footer": {
                     "text": "Powered by First",
-                    "icon_url": "https://alshabili.site/logo.png"
+                    "icon_url": "https://alshabili.com/logo.png"
                 },
 
                 "timestamp": datetime.now(timezone.utc).isoformat()

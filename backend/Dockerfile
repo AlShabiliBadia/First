@@ -8,7 +8,8 @@ RUN apt-get update && apt-get install -y \
     gnupg \
     && rm -rf /var/lib/apt/lists/*
 
-RUN groupadd -r appgroup && useradd -r -g appgroup appuser
+RUN groupadd -r appgroup && useradd -r -g appgroup -m appuser
+RUN mkdir -p /home/appuser/.cache/fontconfig && chown -R appuser:appgroup /home/appuser
 
 WORKDIR /app
 

@@ -1,7 +1,11 @@
 """Browser utilities for web scraping with Playwright."""
 
 import asyncio
+import os
 import random
+import signal
+from typing import Optional
+
 from playwright.async_api import async_playwright, Browser, BrowserContext, Playwright
 
 from logging_config import get_scraper_logger
@@ -99,3 +103,71 @@ async def route_intercept(route) -> None:
         await route.abort()
     else:
         await route.continue_()
+
+
+async def force_cleanup(
+    playwright: Optional[Playwright] = None, 
+    browser: Optional[Browser] = None
+) -> None:
+    """
+    Guaranteed cleanup of browser and Playwright resources.
+    
+    Uses a 3-layer approach:
+    1. Try browser.close() with timeout
+    2. Try playwright.stop() with timeout
+    3. OS-level SIGKILL of any remaining child processes
+    
+    This ensures leaked Playwright driver processes can never accumulate.
+    """
+    # Layer 1: Graceful browser close
+    if browser:
+        try:
+            await asyncio.wait_for(browser.close(), timeout=5)
+        except Exception as e:
+            logger.warning(f"Browser.close() failed (will force-kill): {e}")
+
+    # Layer 2: Graceful playwright stop
+    if playwright:
+        try:
+            await asyncio.wait_for(playwright.stop(), timeout=5)
+        except Exception as e:
+            logger.warning(f"Playwright.stop() failed (will force-kill): {e}")
+
+    # Layer 3: OS-level kill of any orphaned child processes
+    _kill_orphaned_browser_processes()
+
+
+def _kill_orphaned_browser_processes() -> None:
+    """
+    Kill any leftover chrome/playwright node child processes owned by us.
+    
+    Walks /proc to find processes whose parent PID is ours, and sends SIGKILL.
+    This is the nuclear option that guarantees no zombie processes survive.
+    """
+    current_pid = os.getpid()
+    killed = 0
+
+    try:
+        for entry in os.listdir("/proc"):
+            if not entry.isdigit():
+                continue
+            try:
+                with open(f"/proc/{entry}/stat") as f:
+                    stat = f.read()
+                # Parse PPID from /proc/<pid>/stat
+                # Format: pid (comm) state ppid ...
+                ppid = int(stat.split(")")[1].split()[1])
+                child_pid = int(entry)
+                if ppid == current_pid and child_pid != current_pid:
+                    os.kill(child_pid, signal.SIGKILL)
+                    killed += 1
+            except (FileNotFoundError, PermissionError, ProcessLookupError,
+                    ValueError, IndexError, OSError):
+                continue
+    except FileNotFoundError:
+        # /proc doesn't exist (non-Linux) — skip
+        return
+
+    if killed > 0:
+        logger.warning(f"Force-killed {killed} orphaned child process(es)")
+

@@ -5,7 +5,7 @@ from typing import Dict, List, Optional, Tuple
 from playwright.async_api import Browser, Playwright
 
 from config import settings
-from core.scraping.browser import init_browser, init_context, route_intercept
+from core.scraping.browser import init_browser, init_context, route_intercept, force_cleanup
 from core.scraping.selectors import Selectors
 from clients import get_redis_client
 from core.processing.normalizer import normalize_data
@@ -23,9 +23,12 @@ async def scrape_newest_jobs() -> None:
     Fetches the first 10 jobs from each category's listing page,
     then compares them against known jobs to find new ones.
     """
-    playwright, browser = await init_browser()
+    playwright = None
+    browser = None
     
     try:
+        playwright, browser = await init_browser()
+        
         if not browser.is_connected():
             raise RuntimeError("Browser disconnected before context creation")
             
@@ -67,8 +70,7 @@ async def scrape_newest_jobs() -> None:
         await _compare_and_scrape_details(newest_jobs, playwright, browser)
         
     finally:
-        await browser.close()
-        await playwright.stop()
+        await force_cleanup(playwright, browser)
 
 
 async def _compare_and_scrape_details(

@@ -9,7 +9,7 @@ services:
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD-SHELL", "redis-cli -a $$REDIS_PASS ping"]
+      test: [ "CMD-SHELL", "redis-cli -a $$REDIS_PASS ping" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -23,7 +23,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U first"]
+      test: [ "CMD-SHELL", "pg_isready -U first" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -35,7 +35,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: first-scraper
-    command: ["python", "-m", "core.scraping.main"]
+    command: [ "python", "-m", "core.scraping.main" ]
     env_file:
       - ./backend/src/.env
     depends_on:
@@ -44,14 +44,19 @@ services:
       postgres:
         condition: service_healthy
     shm_size: '2gb'
-    restart: on-failure:5
+    pids_limit: 256
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+    restart: unless-stopped
 
   consumer:
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: first-consumer
-    command: ["python", "-m", "core.queue.main"]
+    command: [ "python", "-m", "core.queue.main" ]
     env_file:
       - ./backend/src/.env
     depends_on:
@@ -66,7 +71,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: first-telegram-bot
-    command: ["python", "-m", "core.telegram.bot"]
+    command: [ "python", "-m", "core.telegram.bot" ]
     env_file:
       - ./backend/src/.env
     depends_on:
@@ -82,9 +87,9 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: first-api
-    command: ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
+    command: [ "uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1" ]
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     env_file:
       - ./backend/src/.env
     depends_on:
