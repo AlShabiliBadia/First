@@ -45,10 +45,6 @@ services:
         condition: service_healthy
     shm_size: '2gb'
     pids_limit: 256
-    deploy:
-      resources:
-        limits:
-          memory: 1g
     restart: unless-stopped
 
   consumer:
