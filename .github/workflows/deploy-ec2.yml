@@ -31,15 +31,29 @@ jobs:
             cd "$APP_DIR"
             git pull --ff-only
 
-            if docker compose version >/dev/null 2>&1; then
-              COMPOSE="docker compose"
-            elif command -v docker-compose >/dev/null 2>&1; then
+            if docker info >/dev/null 2>&1; then
+              DOCKER="docker"
+            elif sudo -n docker info >/dev/null 2>&1; then
+              DOCKER="sudo docker"
+            else
+              echo "Docker daemon is not accessible for this user"
+              id
+              groups
+              exit 1
+            fi
+
+            if $DOCKER compose version >/dev/null 2>&1; then
+              COMPOSE="$DOCKER compose"
+            elif command -v docker-compose >/dev/null 2>&1 && docker-compose version >/dev/null 2>&1; then
               COMPOSE="docker-compose"
+            elif command -v docker-compose >/dev/null 2>&1 && sudo -n docker-compose version >/dev/null 2>&1; then
+              COMPOSE="sudo docker-compose"
             else
               echo "Docker Compose is not installed on the server"
               exit 1
             fi
 
-            $COMPOSE up -d --build --remove-orphans
+            echo "Using compose command: $COMPOSE"
+            $COMPOSE up --build -d --remove-orphans
             $COMPOSE exec -T api alembic upgrade head
-            docker image prune -f
+            $DOCKER image prune -f
